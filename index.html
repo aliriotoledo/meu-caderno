@@ -49,7 +49,7 @@
             stroke: #4ade80; 
         }
 
-        /* Caixa de Entrada */
+        /* Caixa de Entrada Principal */
         .input-container { 
             background: white; 
             margin: 20px; 
@@ -70,9 +70,6 @@
             outline: none; 
             color: #374151;
         }
-        input[type="text"]::placeholder {
-            color: #9ca3af;
-        }
         input[type="text"]:focus { 
             border-color: #5548d9; 
         }
@@ -87,11 +84,8 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            transition: background-color 0.2s;
         }
-        .btn-add:active { 
-            background-color: #4338ca; 
-        }
+        .btn-add:active { background-color: #4338ca; }
         textarea { 
             width: 100%; 
             margin-top: 10px; 
@@ -104,10 +98,6 @@
             box-sizing: border-box; 
             outline: none;
             color: #4b5563;
-        }
-        textarea::placeholder {
-            color: #cbd5e1;
-            font-style: italic;
         }
 
         /* Lista de Atividades */
@@ -128,127 +118,4 @@
             color: #1f2937;
             cursor: pointer; 
             display: flex; 
-            justify-content: space-between; 
-            align-items: center;
-            user-select: none; 
-        }
-        .titulo-texto {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        /* Ícone de checkbox para as tarefas */
-        .check-icon {
-            width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px;
-        }
-        .expand-icon {
-            color: #5548d9;
-            font-size: 1.5em;
-            line-height: 1;
-        }
-        .conteudo { 
-            padding: 0 15px 15px 45px; 
-            display: none; 
-            color: #4b5563;
-            font-size: 0.95em;
-        }
-        .conteudo.ativo { 
-            display: block; 
-        }
-        .data { 
-            font-size: 0.8em; 
-            color: #9ca3af; 
-            display: block; 
-            margin-top: 8px; 
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <div class="header-title">
-            <!-- Ícone de Caderno -->
-            <svg viewBox="0 0 24 24"><path d="M4 2h16c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h16V4H4zm2 4h12v2H6V8zm0 4h12v2H6v-2zm0 4h8v2H6v-2z"/></svg>
-            Meu Caderno
-        </div>
-        <div class="badge-online">
-            <!-- Ícone de Nuvem/Check -->
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            Online
-        </div>
-    </div>
-    
-    <div class="input-container">
-        <div class="input-row">
-            <input type="text" id="novaAtividade" placeholder="O que vamos fazer hoje?">
-            <button class="btn-add" onclick="adicionarNota()">+</button>
-        </div>
-        <textarea id="novoComentario" placeholder="Adicionar um comentário ou detalhe..."></textarea>
-    </div>
-
-    <div id="listaAnotacoes"></div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        // === COLOQUE AS SUAS CHAVES DO FIREBASE AQUI ===
-        const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_BUCKET",
-            messagingSenderId: "SEU_SENDER",
-            appId: "SEU_APP_ID"
-        };
-        // ===============================================
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        window.adicionarNota = async function() {
-            const titulo = document.getElementById('novaAtividade').value;
-            const comentario = document.getElementById('novoComentario').value;
-            
-            if (!titulo) return;
-            
-            await addDoc(collection(db, "anotacoes"), {
-                titulo: titulo,
-                comentario: comentario,
-                data: new Date()
-            });
-            
-            document.getElementById('novaAtividade').value = '';
-            document.getElementById('novoComentario').value = '';
-        };
-
-        const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const lista = document.getElementById('listaAnotacoes');
-            lista.innerHTML = '';
-            
-            snapshot.forEach((doc) => {
-                const nota = doc.data();
-                const div = document.createElement('div');
-                div.className = 'atividade';
-                
-                const dataFormatada = nota.data ? nota.data.toDate().toLocaleString('pt-PT') : '';
-
-                div.innerHTML = `
-                    <div class="titulo" onclick="this.nextElementSibling.classList.toggle('ativo')">
-                        <div class="titulo-texto">
-                            <div class="check-icon"></div>
-                            ${nota.titulo}
-                        </div>
-                        <span class="expand-icon">+</span>
-                    </div>
-                    <div class="conteudo">
-                        <div style="margin-top:0; white-space: pre-wrap;">${nota.comentario || ''}</div>
-                        <span class="data">${dataFormatada}</span>
-                    </div>
-                `;
-                lista.appendChild(div);
-            });
-        });
-    </script>
-</body>
-</html>
+            justify-content: space-between;
