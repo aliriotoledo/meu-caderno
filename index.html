@@ -247,9 +247,13 @@
             font-size: 1.1em; font-weight: 600; outline: none; resize: none; font-family: inherit;
         }
         
+        /* Ajuste do CSS para impedir o corte de texto */
         .details-row {
-            padding: 12px 15px; display: flex; align-items: center; gap: 15px;
-            font-size: 0.9em; color: var(--text-secondary); cursor: pointer; border-bottom: 1px solid var(--border-color);
+            padding: 14px 15px; 
+            min-height: 52px; /* Garante espaço vertical suficiente */
+            display: flex; align-items: center; gap: 15px;
+            font-size: 0.9em; line-height: 1.4; color: var(--text-secondary); 
+            cursor: pointer; border-bottom: 1px solid var(--border-color);
             position: relative;
         }
         .details-row:last-child { border-bottom: none; }
@@ -635,7 +639,7 @@
                             <textarea class="details-title-input" rows="2" onchange="salvarTitulo('${docId}', this.value)">${nota.titulo}</textarea>
                             <div class="task-star">☆</div>
                         </div>
-                        <div class="details-row" style="padding: 0; border: none; color: var(--text-accent-green);">
+                        <div class="details-row" style="padding: 0; border: none; color: var(--text-accent-green); min-height: auto;">
                             <span class="details-icon" style="font-size: 1.5em; margin-right: 5px;">+</span> Adicionar etapa
                         </div>
                     </div>
