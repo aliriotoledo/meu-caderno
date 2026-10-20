@@ -39,9 +39,9 @@
         }
         .header-subtitle {
             font-size: 0.75em;
-            color: #cbd5e1; /* Cor mais clara para contraste sutil */
+            color: #cbd5e1;
             margin-top: 4px;
-            margin-left: 34px; /* Alinha com o texto, ignorando o espaço do ícone */
+            margin-left: 34px;
             font-weight: 400;
         }
         .badge-online { 
@@ -193,7 +193,6 @@
                 <svg viewBox="0 0 24 24"><path d="M4 2h16c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h16V4H4zm2 4h12v2H6V8zm0 4h12v2H6v-2zm0 4h8v2H6v-2z"/></svg>
                 Meu Caderno
             </div>
-            <!-- Nova div para a Data e Hora -->
             <div id="relogioCabecalho" class="header-subtitle"></div>
         </div>
         <div class="badge-online">
@@ -216,42 +215,35 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // === COLOQUE AS SUAS CHAVES DO FIREBASE AQUI ===
+        // Chaves de ligação do Firebase inseridas automaticamente
         const firebaseConfig = {
-            apiKey: "SUA_API_KEY",
-            authDomain: "SEU_PROJETO.firebaseapp.com",
-            projectId: "SEU_PROJECT_ID",
-            storageBucket: "SEU_BUCKET",
-            messagingSenderId: "SEU_SENDER",
-            appId: "SEU_APP_ID"
+            apiKey: "AIzaSyAnIk5cQwljtWvEcvyvsZ-gejfMIpggx3Q",
+            authDomain: "meu-caderno-app.firebaseapp.com",
+            projectId: "meu-caderno-app",
+            storageBucket: "meu-caderno-app.firebasestorage.app",
+            messagingSenderId: "237821420171",
+            appId: "1:237821420171:web:063873bdb2e4707a6dea8e",
+            measurementId: "G-HVKVB5PBX"
         };
-        // ===============================================
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- Função para Atualizar Relógio no Topo ---
+        // Função para atualizar relógio e data no topo
         function atualizarRelogio() {
             const elementoRelogio = document.getElementById('relogioCabecalho');
             if(!elementoRelogio) return;
             
             const agora = new Date();
-            
-            // Exibe dia da semana, dia, mês e ano. Ex: seg., 19 de out. de 2026
             const opcoesData = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
             let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData);
-            
-            // Exibe a hora. Ex: 20:07
             const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
             
             elementoRelogio.textContent = dataFormatada + ' - ' + horaFormatada;
         }
         
-        // Atualiza o relógio a cada segundo
         setInterval(atualizarRelogio, 1000);
-        atualizarRelogio(); // Chama imediatamente ao abrir a página
-        // ---------------------------------------------
-
+        atualizarRelogio();
 
         // Função para Adicionar Nova Nota
         window.adicionarNota = async function() {
@@ -300,6 +292,7 @@
             }
         };
 
+        // Carregar anotações em tempo real
         const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
         onSnapshot(q, (snapshot) => {
             const lista = document.getElementById('listaAnotacoes');
@@ -311,7 +304,6 @@
                 div.className = 'atividade';
                 
                 const dataFormatada = nota.data ? nota.data.toDate().toLocaleString('pt-BR') : '';
-                
                 const comentarioExibicao = (nota.comentario || '').replace(/\n/g, '<br>');
 
                 div.innerHTML = `
