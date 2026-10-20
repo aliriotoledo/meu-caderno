@@ -180,4 +180,162 @@
             font-size: 13px;
             font-weight: 600;
             cursor: pointer;
-            align-
+            align-self: flex-start;
+        }
+        .btn-small:hover { background-color: #e5e7eb; }
+        .data { font-size: 0.8em; color: #9ca3af; display: block; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <div class="header-title">
+                <svg viewBox="0 0 24 24"><path d="M4 2h16c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h16V4H4zm2 4h12v2H6V8zm0 4h12v2H6v-2zm0 4h8v2H6v-2z"/></svg>
+                Meu Caderno
+            </div>
+            <!-- Nova div para a Data e Hora -->
+            <div id="relogioCabecalho" class="header-subtitle"></div>
+        </div>
+        <div class="badge-online">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            Online
+        </div>
+    </div>
+    
+    <div class="input-container">
+        <div class="input-row">
+            <input type="text" id="novaAtividade" placeholder="O que vamos fazer hoje?">
+            <button class="btn-add" onclick="adicionarNota()">+</button>
+        </div>
+        <textarea id="novoComentario" placeholder="Adicionar um comentário ou detalhe inicial..."></textarea>
+    </div>
+
+    <div id="listaAnotacoes"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+        // === COLOQUE AS SUAS CHAVES DO FIREBASE AQUI ===
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY",
+            authDomain: "SEU_PROJETO.firebaseapp.com",
+            projectId: "SEU_PROJECT_ID",
+            storageBucket: "SEU_BUCKET",
+            messagingSenderId: "SEU_SENDER",
+            appId: "SEU_APP_ID"
+        };
+        // ===============================================
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- Função para Atualizar Relógio no Topo ---
+        function atualizarRelogio() {
+            const elementoRelogio = document.getElementById('relogioCabecalho');
+            if(!elementoRelogio) return;
+            
+            const agora = new Date();
+            
+            // Exibe dia da semana, dia, mês e ano. Ex: seg., 19 de out. de 2026
+            const opcoesData = { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' };
+            let dataFormatada = agora.toLocaleDateString('pt-BR', opcoesData);
+            
+            // Exibe a hora. Ex: 20:07
+            const horaFormatada = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            
+            elementoRelogio.textContent = dataFormatada + ' - ' + horaFormatada;
+        }
+        
+        // Atualiza o relógio a cada segundo
+        setInterval(atualizarRelogio, 1000);
+        atualizarRelogio(); // Chama imediatamente ao abrir a página
+        // ---------------------------------------------
+
+
+        // Função para Adicionar Nova Nota
+        window.adicionarNota = async function() {
+            const inputTitulo = document.getElementById('novaAtividade');
+            const inputComentario = document.getElementById('novoComentario');
+            
+            const titulo = inputTitulo.value;
+            const comentario = inputComentario.value;
+            
+            if (!titulo) return;
+            
+            inputTitulo.value = '';
+            inputComentario.value = '';
+            
+            await addDoc(collection(db, "anotacoes"), {
+                titulo: titulo,
+                comentario: comentario,
+                data: new Date()
+            });
+        };
+
+        // Função para Adicionar Mais Comentários
+        window.adicionarComentarioAdicional = async function(docId) {
+            const textareaExtra = document.getElementById('extra-' + docId);
+            const novoTexto = textareaExtra.value;
+            
+            if (!novoTexto) return;
+            
+            textareaExtra.value = ''; 
+            
+            const docRef = doc(db, "anotacoes", docId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const dados = docSnap.data();
+                const comentarioAntigo = dados.comentario || '';
+                
+                const dataAtual = new Date().toLocaleString('pt-BR').slice(0, 16);
+                const separador = comentarioAntigo ? "\n\n" : "";
+                
+                const textoFinal = comentarioAntigo + separador + "✏️ [" + dataAtual + "] " + novoTexto;
+                
+                await updateDoc(docRef, {
+                    comentario: textoFinal
+                });
+            }
+        };
+
+        const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const lista = document.getElementById('listaAnotacoes');
+            lista.innerHTML = '';
+            
+            snapshot.forEach((doc) => {
+                const nota = doc.data();
+                const div = document.createElement('div');
+                div.className = 'atividade';
+                
+                const dataFormatada = nota.data ? nota.data.toDate().toLocaleString('pt-BR') : '';
+                
+                const comentarioExibicao = (nota.comentario || '').replace(/\n/g, '<br>');
+
+                div.innerHTML = `
+                    <div class="titulo" onclick="this.nextElementSibling.classList.toggle('ativo')">
+                        <div class="titulo-texto">
+                            <div class="check-icon"></div>
+                            ${nota.titulo}
+                        </div>
+                        <span class="expand-icon">+</span>
+                    </div>
+                    <div class="conteudo">
+                        <div style="margin-top:0; margin-bottom: 10px; line-height: 1.5;">${comentarioExibicao}</div>
+                        
+                        <div class="add-comentario-box">
+                            <textarea id="extra-${doc.id}" placeholder="Adicionar mais observações..."></textarea>
+                            <button class="btn-small" onclick="adicionarComentarioAdicional('${doc.id}')">Guardar Observação</button>
+                        </div>
+
+                        <span class="data">Criado em: ${dataFormatada}</span>
+                    </div>
+                `;
+                lista.appendChild(div);
+            });
+        });
+    </script>
+</body>
+</html>
