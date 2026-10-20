@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -250,12 +250,22 @@
         .details-row {
             padding: 12px 15px; display: flex; align-items: center; gap: 15px;
             font-size: 0.9em; color: var(--text-secondary); cursor: pointer; border-bottom: 1px solid var(--border-color);
+            position: relative;
         }
         .details-row:last-child { border-bottom: none; }
         .details-row:hover { background-color: var(--bg-item-hover); color: var(--text-primary); }
         .details-icon { font-size: 1.2em; width: 20px; text-align: center; }
         
-        .text-green { color: var(--text-accent-green); }
+        .row-text-content { flex: 1; display: flex; flex-direction: column; pointer-events: none; }
+        .row-text-main { color: var(--text-primary); }
+        .text-green { color: var(--text-accent-green) !important; }
+        
+        .btn-clear-row { 
+            background: none; border: none; color: var(--text-secondary); font-size: 1.1em; cursor: pointer; 
+            z-index: 10; position: relative; display: none;
+        }
+        .details-row:hover .btn-clear-row { display: block; }
+        .btn-clear-row:hover { color: white; }
 
         /* Anotações e Comentários */
         .add-note-box textarea {
@@ -288,6 +298,12 @@
         }
         .btn-delete { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2em; }
         .btn-delete:hover { color: var(--danger); }
+
+        /* Esconder input nativo sobrepondo o elemento inteiro */
+        .hidden-date-input {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            opacity: 0; cursor: pointer; z-index: 5;
+        }
 
         @media (max-width: 768px) {
             .sidebar { display: none; }
@@ -359,9 +375,7 @@
                 <div class="calendar-day-header">Sex</div>
                 <div class="calendar-day-header">Sáb</div>
             </div>
-            <div class="calendar-grid" id="calendarioDias">
-                <!-- Dias gerados via JS -->
-            </div>
+            <div class="calendar-grid" id="calendarioDias"></div>
         </div>
     </main>
 
@@ -388,7 +402,7 @@
         let atividadeAtivaId = null;
         let dataCalendario = new Date();
 
-        // Alternância de Abas (Caderno vs Agenda)
+        // Alternância de Abas
         window.alternarAba = function(aba) {
             fecharDetalhes();
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -448,7 +462,13 @@
                 let eventosHtml = '';
                 
                 Object.values(todasAnotacoes).forEach(nota => {
-                    if (nota.data) {
+                    // Simulação para exibir data de conclusão no calendário
+                    if (nota.dataConclusao) {
+                        const partes = nota.dataConclusao.split('-');
+                        if (parseInt(partes[2]) === dia && parseInt(partes[1]) - 1 === mes && parseInt(partes[0]) === ano) {
+                            eventosHtml += `<div class="calendar-event">${nota.titulo}</div>`;
+                        }
+                    } else if (nota.data) {
                         const dataNota = nota.data.toDate();
                         if (dataNota.getDate() === dia && dataNota.getMonth() === mes && dataNota.getFullYear() === ano) {
                             eventosHtml += `<div class="calendar-event">${nota.titulo}</div>`;
@@ -501,9 +521,12 @@
                 item.className = `task-item ${docId === atividadeAtivaId ? 'selected' : ''}`;
                 item.onclick = () => abrirDetalhes(docId);
 
+                // Mostra ícone se for "Meu Dia"
+                const iconeMeuDia = nota.meuDia ? '<span style="color:var(--text-accent-green); margin-right:8px; font-size:1.1em;">☀️</span>' : '';
+
                 item.innerHTML = `
                     <div class="task-circle" onclick="arquivarAtividade('${docId}'); event.stopPropagation();"></div>
-                    <div class="task-title-text">${nota.titulo}</div>
+                    <div class="task-title-text">${iconeMeuDia}${nota.titulo}</div>
                     <div class="task-star">☆</div>
                 `;
                 lista.appendChild(item);
@@ -534,11 +557,62 @@
             document.querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
         };
 
+        // FUNÇÕES DOS BOTÕES DE AÇÃO
+        window.salvarCampo = async function(docId, campo, valor) {
+            if(valor !== null) {
+                const docRef = doc(db, "anotacoes", docId);
+                await updateDoc(docRef, { [campo]: valor });
+            }
+        };
+
+        window.limparCampo = async function(docId, campo) {
+            const docRef = doc(db, "anotacoes", docId);
+            await updateDoc(docRef, { [campo]: null });
+        };
+
+        window.toggleMeuDia = async function(docId) {
+            const nota = todasAnotacoes[docId];
+            const docRef = doc(db, "anotacoes", docId);
+            await updateDoc(docRef, { meuDia: !nota.meuDia });
+        };
+
+        window.atribuirPessoa = async function(docId) {
+            const nota = todasAnotacoes[docId];
+            const pessoa = prompt("Atribuir esta tarefa a:", nota.atribuidoA || "");
+            if (pessoa !== null) {
+                salvarCampo(docId, 'atribuidoA', pessoa.trim());
+            }
+        };
+
+        window.definirRepeticao = async function(docId) {
+            const nota = todasAnotacoes[docId];
+            const repeticao = prompt("Com que frequência? (ex: Diariamente, Semanalmente)", nota.repetir || "");
+            if (repeticao !== null) {
+                salvarCampo(docId, 'repetir', repeticao.trim());
+            }
+        };
+
         function renderizarPainelDetalhes(docId) {
             const nota = todasAnotacoes[docId];
             const panel = document.getElementById('detailsPanel');
             const dataFormatada = nota.data ? nota.data.toDate().toLocaleDateString('pt-BR') : '';
             
+            // Variáveis Dinâmicas para Estados dos Campos
+            const meuDiaClass = nota.meuDia ? 'text-green' : '';
+            const meuDiaTexto = nota.meuDia ? 'Adicionado a Meu Dia' : 'Adicionar a Meu Dia';
+
+            const lembreteStr = nota.lembrete ? new Date(nota.lembrete).toLocaleString('pt-PT').slice(0, 16) : 'Lembre-me';
+            const lembreteClass = nota.lembrete ? 'text-green' : '';
+
+            const dataConclusaoStr = nota.dataConclusao ? new Date(nota.dataConclusao + 'T00:00:00').toLocaleDateString('pt-PT') : 'Adicionar data de conclusão';
+            const dataConclusaoClass = nota.dataConclusao ? 'text-green' : '';
+
+            const repetirStr = nota.repetir ? `Repetir: ${nota.repetir}` : 'Repetir';
+            const repetirClass = nota.repetir ? 'text-green' : '';
+
+            const atribuidoStr = nota.atribuidoA ? `Atribuído a: ${nota.atribuidoA}` : 'Atribuir a';
+            const atribuidoClass = nota.atribuidoA ? 'text-green' : '';
+
             let anexosHtml = '';
             if (nota.anexos && nota.anexos.length > 0) {
                 anexosHtml = nota.anexos.map(item => 
@@ -566,26 +640,54 @@
                         </div>
                     </div>
 
+                    <!-- Bloco Meu Dia -->
                     <div class="details-block">
-                        <div class="details-row"><span class="details-icon">☀️</span> Adicionar a Meu Dia</div>
+                        <div class="details-row" onclick="toggleMeuDia('${docId}')">
+                            <span class="details-icon ${meuDiaClass}">☀️</span> 
+                            <span class="row-text-main ${meuDiaClass}" style="flex:1;">${meuDiaTexto}</span>
+                            ${nota.meuDia ? `<button class="btn-clear-row" onclick="event.stopPropagation(); toggleMeuDia('${docId}')">✕</button>` : ''}
+                        </div>
                     </div>
 
+                    <!-- Bloco Data e Hora -->
                     <div class="details-block">
-                        <div class="details-row"><span class="details-icon text-green">⏰</span> Lembre-me à(s) 09:00</div>
-                        <div class="details-row"><span class="details-icon text-green">📅</span> Para Amanhã</div>
-                        <div class="details-row"><span class="details-icon">🔁</span> Repetir</div>
+                        <div class="details-row">
+                            <input type="datetime-local" class="hidden-date-input" onchange="salvarCampo('${docId}', 'lembrete', this.value)" value="${nota.lembrete || ''}">
+                            <span class="details-icon ${lembreteClass}">⏰</span> 
+                            <span class="row-text-main ${lembreteClass}" style="flex:1; pointer-events: none;">${lembreteStr}</span>
+                            ${nota.lembrete ? `<button class="btn-clear-row" onclick="event.preventDefault(); limparCampo('${docId}', 'lembrete')">✕</button>` : ''}
+                        </div>
+                        
+                        <div class="details-row">
+                            <input type="date" class="hidden-date-input" onchange="salvarCampo('${docId}', 'dataConclusao', this.value)" value="${nota.dataConclusao || ''}">
+                            <span class="details-icon ${dataConclusaoClass}">📅</span> 
+                            <span class="row-text-main ${dataConclusaoClass}" style="flex:1; pointer-events: none;">${dataConclusaoStr}</span>
+                            ${nota.dataConclusao ? `<button class="btn-clear-row" onclick="event.preventDefault(); limparCampo('${docId}', 'dataConclusao')">✕</button>` : ''}
+                        </div>
+                        
+                        <div class="details-row" onclick="definirRepeticao('${docId}')">
+                            <span class="details-icon ${repetirClass}">🔁</span> 
+                            <span class="row-text-main ${repetirClass}" style="flex:1;">${repetirStr}</span>
+                            ${nota.repetir ? `<button class="btn-clear-row" onclick="event.stopPropagation(); limparCampo('${docId}', 'repetir')">✕</button>` : ''}
+                        </div>
                     </div>
 
+                    <!-- Bloco Atribuir a -->
                     <div class="details-block">
-                        <div class="details-row"><span class="details-icon">👤</span> Atribuir a</div>
+                        <div class="details-row" onclick="atribuirPessoa('${docId}')">
+                            <span class="details-icon ${atribuidoClass}">👤</span> 
+                            <span class="row-text-main ${atribuidoClass}" style="flex:1;">${atribuidoStr}</span>
+                            ${nota.atribuidoA ? `<button class="btn-clear-row" onclick="event.stopPropagation(); limparCampo('${docId}', 'atribuidoA')">✕</button>` : ''}
+                        </div>
                     </div>
 
+                    <!-- Bloco Anexos -->
                     <div class="details-block">
                         <div class="details-row" onclick="anexarFicheiro('${docId}')"><span class="details-icon">📎</span> Adicionar arquivo</div>
                         ${anexosHtml ? `<div class="anexos-list">${anexosHtml}</div>` : ''}
                     </div>
 
-                    <!-- Bloco Modificado: Anotação primeiro, Comentários Históricos abaixo -->
+                    <!-- Bloco Observações -->
                     <div class="details-block" style="padding: 15px;">
                         <div class="add-note-box">
                             <textarea id="extra-${docId}" placeholder="Adicionar anotação"></textarea>
