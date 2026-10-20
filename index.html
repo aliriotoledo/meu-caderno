@@ -99,6 +99,37 @@
             font-size: 0.85em; color: var(--text-secondary); margin-top: 5px;
         }
 
+        /* Container Dinâmico de Vistas */
+        .view-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        #viewAgenda {
+            display: none;
+            padding: 20px 40px;
+            overflow-y: auto;
+        }
+
+        /* Calendário */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        .cal-header {
+            text-align: center; font-weight: bold; padding: 10px; color: var(--text-secondary); font-size: 0.9em; text-transform: uppercase;
+        }
+        .cal-day {
+            background: var(--bg-item); border-radius: 5px; min-height: 100px; padding: 10px; border: 1px solid transparent; cursor: pointer; display: flex; flex-direction: column;
+        }
+        .cal-day:hover { background: var(--bg-item-hover); border-color: var(--border-color); }
+        .cal-day.empty { background: transparent; cursor: default; border: none; }
+        .cal-day.hoje { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); }
+        .day-number { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+
         .task-list-container {
             flex: 1;
             overflow-y: auto;
@@ -106,26 +137,13 @@
         }
 
         .task-item {
-            background-color: var(--bg-item);
-            border-radius: 5px;
-            padding: 12px 16px;
-            margin-bottom: 6px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            cursor: pointer;
-            transition: background 0.2s;
-            border: 1px solid transparent;
+            background-color: var(--bg-item); border-radius: 5px; padding: 12px 16px; margin-bottom: 6px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent;
         }
         .task-item:hover { background-color: var(--bg-item-hover); }
         .task-item.selected { border-color: var(--border-color); background-color: var(--bg-item-hover); }
         
-        .task-circle {
-            width: 18px; height: 18px; border: 1.5px solid var(--text-secondary); border-radius: 50%;
-            flex-shrink: 0; cursor: pointer;
-        }
+        .task-circle { width: 18px; height: 18px; border: 1.5px solid var(--text-secondary); border-radius: 50%; flex-shrink: 0; cursor: pointer; }
         .task-circle:hover { border-color: white; }
-        
         .task-title-text { flex: 1; font-size: 0.95em; }
         .task-star { color: var(--text-secondary); font-size: 1.2em; cursor: pointer; }
 
@@ -135,91 +153,33 @@
             background-color: var(--bg-main);
         }
         .add-task-box {
-            background-color: var(--bg-item);
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
+            background-color: var(--bg-item); border-radius: 5px; display: flex; align-items: center; padding: 0 15px;
         }
         .add-task-box input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            padding: 15px 10px;
-            font-size: 0.95em;
-            outline: none;
+            flex: 1; background: transparent; border: none; color: white; padding: 15px 10px; font-size: 0.95em; outline: none;
         }
         .add-task-box input::placeholder { color: var(--text-secondary); }
-        .btn-add { background: none; border: none; color: var(--text-primary); font-size: 1.5em; cursor: pointer; padding: 10px; }
 
         /* --- COLUNA 3: PAINEL DE DETALHES --- */
         .details-panel {
-            width: 360px;
-            background-color: var(--bg-panel);
-            border-left: 1px solid var(--border-color);
-            display: none;
-            flex-direction: column;
+            width: 360px; background-color: var(--bg-panel); border-left: 1px solid var(--border-color); display: none; flex-direction: column;
         }
         .details-panel.active { display: flex; }
 
-        .details-top-bar {
-            padding: 10px 15px;
-            display: flex;
-            justify-content: flex-end;
-            border-bottom: 1px solid var(--border-color);
-        }
+        .details-top-bar { padding: 10px 15px; display: flex; justify-content: flex-end; border-bottom: 1px solid var(--border-color); }
         .btn-close-details { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2em; padding: 0; }
         .btn-close-details:hover { color: white; }
 
-        .details-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .details-body { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
 
         /* Blocos Agrupados */
-        .details-block {
-            background-color: var(--bg-item);
-            border-radius: 5px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .details-block-header {
-            padding: 15px;
-        }
-        .details-title-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        .details-title-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 1.1em;
-            font-weight: 600;
-            outline: none;
-            resize: none;
-            font-family: inherit;
-        }
+        .details-block { background-color: var(--bg-item); border-radius: 5px; overflow: hidden; display: flex; flex-direction: column; }
+        .details-block-header { padding: 15px; }
+        .details-title-row { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; }
+        .details-title-input { flex: 1; background: transparent; border: none; color: white; font-size: 1.1em; font-weight: 600; outline: none; resize: none; font-family: inherit; }
         
         .details-row {
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 0.9em;
-            color: var(--text-secondary);
-            cursor: pointer;
-            border-bottom: 1px solid var(--border-color);
-            position: relative;
+            padding: 12px 15px; display: flex; align-items: center; gap: 15px; font-size: 0.9em; color: var(--text-secondary); cursor: pointer; border-bottom: 1px solid var(--border-color); position: relative;
         }
         .details-row:last-child { border-bottom: none; }
         .details-row:hover { background-color: var(--bg-item-hover); color: var(--text-primary); }
@@ -228,352 +188,13 @@
         .row-text-content { flex: 1; display: flex; flex-direction: column; }
         .row-text-main { color: var(--text-primary); }
         .row-text-sub { font-size: 0.85em; color: var(--text-secondary); margin-top: 2px; }
-        
         .text-green { color: var(--text-accent-green); }
-        .btn-clear-row { background: none; border: none; color: var(--text-secondary); font-size: 1.1em; cursor: pointer; display: none; }
-        .details-row:hover .btn-clear-row { display: block; }
-        .btn-clear-row:hover { color: white; }
 
         /* Anotações e Comentários */
-        .comments-display {
-            font-size: 0.9em; line-height: 1.5; color: var(--text-primary); margin-bottom: 15px;
-            white-space: pre-wrap; padding: 0 5px;
-        }
         .add-note-box textarea {
-            width: 100%; background-color: transparent; border: none;
-            color: white; font-family: inherit; font-size: 0.9em;
-            resize: vertical; min-height: 40px; outline: none;
+            width: 100%; background-color: transparent; border: none; color: white; font-family: inherit; font-size: 0.9em; resize: vertical; min-height: 40px; outline: none;
         }
         .add-note-box textarea::placeholder { color: var(--text-secondary); }
         
         .btn-save-note {
-            background-color: var(--bg-item-hover); border: 1px solid var(--border-color); color: white;
-            padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; float: right; margin-top: 5px;
-        }
-        .btn-save-note:hover { background-color: var(--border-color); }
-
-        .anexos-list { display: flex; flex-direction: column; gap: 8px; padding: 0 15px 15px 15px; }
-        .anexo-item {
-            font-size: 0.85em; color: var(--accent); text-decoration: none; word-break: break-all;
-        }
-        .anexo-item:hover { text-decoration: underline; }
-
-        .details-footer {
-            padding: 15px 20px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8em;
-            color: var(--text-secondary);
-        }
-        .btn-delete { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2em; }
-        .btn-delete:hover { color: var(--danger); }
-
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .main-header { padding: 20px; }
-            .task-list-container { padding: 10px 20px; }
-            .add-task-container { padding: 15px 20px; }
-            .details-panel { position: fixed; top: 0; left: 0; right: 0; bottom: 0; width: 100%; z-index: 100; }
-        }
-    </style>
-</head>
-<body>
-
-    <nav class="sidebar">
-        <div class="user-profile">
-            <img src="https://ui-avatars.com/api/?name=Alirio+Toledo&background=21324D&color=fff" alt="Perfil">
-            <div class="user-profile-info">
-                <strong>Alirio Toledo</strong>
-                <span>aliriotoledo@...</span>
-            </div>
-        </div>
-        <div class="search-bar">
-            🔍 <span>Pesquisar</span>
-        </div>
-        <ul class="nav-list">
-            <li class="nav-item">☀️ Meu Dia</li>
-            <li class="nav-item">⭐ Importante</li>
-            <li class="nav-item">📅 Planejado</li>
-            <li class="nav-item active">📝 Meu Caderno</li>
-        </ul>
-        <div class="divider"></div>
-        <div class="nav-title">Comercial</div>
-        <ul class="nav-list">
-            <li class="nav-item">🔴 Grupo HFC</li>
-            <li class="nav-item">🔵 T.I</li>
-            <li class="nav-item">🟠 Data7</li>
-        </ul>
-    </nav>
-
-    <main class="main-content">
-        <header class="main-header">
-            <h1>Meu Caderno</h1>
-            <div class="date-subtitle" id="relogioCabecalho"></div>
-        </header>
-
-        <div class="task-list-container" id="listaAnotacoes"></div>
-
-        <div class="add-task-container">
-            <div class="add-task-box">
-                <div class="task-circle" style="border-color: transparent; font-size: 1.2em; color: var(--text-secondary);">+</div>
-                <input type="text" id="novaAtividade" placeholder="Adicionar uma tarefa" onkeypress="verificarEnter(event)">
-            </div>
-        </div>
-    </main>
-
-    <aside class="details-panel" id="detailsPanel"></aside>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAnIk5cQwljtWvEcvyvsZ-gejfMIpggx3Q",
-            authDomain: "meu-caderno-app.firebaseapp.com",
-            projectId: "meu-caderno-app",
-            storageBucket: "meu-caderno-app.appspot.com",
-            messagingSenderId: "237821420171",
-            appId: "1:237821420171:web:063873bdb2e4707a6dea8e",
-            measurementId: "G-HVKVB5PBX"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        let todasAnotacoes = {};
-        let atividadeAtivaId = null;
-
-        function atualizarRelogio() {
-            const el = document.getElementById('relogioCabecalho');
-            if(!el) return;
-            const agora = new Date();
-            const opcoesData = { weekday: 'short', day: '2-digit', month: 'short' };
-            el.textContent = agora.toLocaleDateString('pt-BR', opcoesData) + ' - ' + agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-        }
-        setInterval(atualizarRelogio, 1000);
-        atualizarRelogio();
-
-        window.verificarEnter = function(e) {
-            if(e.key === 'Enter') adicionarNota();
-        }
-
-        window.adicionarNota = async function() {
-            const inputTitulo = document.getElementById('novaAtividade');
-            const titulo = inputTitulo.value.trim();
-            if (!titulo) return;
-            inputTitulo.value = '';
-            
-            await addDoc(collection(db, "anotacoes"), {
-                titulo: titulo,
-                comentario: "",
-                anexos: [],
-                arquivado: false,
-                data: new Date()
-            });
-        };
-
-        const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const lista = document.getElementById('listaAnotacoes');
-            lista.innerHTML = '';
-            todasAnotacoes = {};
-            
-            snapshot.forEach((docSnapshot) => {
-                const nota = docSnapshot.data();
-                if (nota.arquivado) return;
-                
-                const docId = docSnapshot.id;
-                todasAnotacoes[docId] = nota;
-
-                const item = document.createElement('div');
-                item.className = `task-item ${docId === atividadeAtivaId ? 'selected' : ''}`;
-                item.onclick = () => abrirDetalhes(docId);
-
-                item.innerHTML = `
-                    <div class="task-circle" onclick="arquivarAtividade('${docId}'); event.stopPropagation();"></div>
-                    <div class="task-title-text">${nota.titulo}</div>
-                    <div class="task-star">☆</div>
-                `;
-                lista.appendChild(item);
-            });
-
-            if (atividadeAtivaId && todasAnotacoes[atividadeAtivaId]) {
-                renderizarPainelDetalhes(atividadeAtivaId);
-            } else {
-                fecharDetalhes();
-            }
-        });
-
-        window.abrirDetalhes = function(docId) {
-            atividadeAtivaId = docId;
-            document.querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-            event.currentTarget.classList.add('selected');
-            renderizarPainelDetalhes(docId);
-            document.getElementById('detailsPanel').classList.add('active');
-        };
-
-        window.fecharDetalhes = function() {
-            atividadeAtivaId = null;
-            document.getElementById('detailsPanel').classList.remove('active');
-            document.querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-        };
-
-        function renderizarPainelDetalhes(docId) {
-            const nota = todasAnotacoes[docId];
-            const panel = document.getElementById('detailsPanel');
-            const dataFormatada = nota.data ? nota.data.toDate().toLocaleDateString('pt-BR') : '';
-            
-            let anexosHtml = '';
-            if (nota.anexos && nota.anexos.length > 0) {
-                anexosHtml = nota.anexos.map(item => 
-                    `<a href="${item.url}" target="_blank" download="${item.nome}" class="anexo-item">📎 ${item.nome}</a>`
-                ).join('');
-            }
-
-            const comentarioExibicao = nota.comentario ? `<div class="comments-display">${nota.comentario}</div>` : '';
-
-            panel.innerHTML = `
-                <div class="details-top-bar">
-                    <button class="btn-close-details" onclick="fecharDetalhes()">✕</button>
-                </div>
-                
-                <div class="details-body">
-                    
-                    <!-- Bloco 1: Título e Etapa -->
-                    <div class="details-block details-block-header">
-                        <div class="details-title-row">
-                            <div class="task-circle" style="margin-top: 5px;" onclick="arquivarAtividade('${docId}')"></div>
-                            <textarea class="details-title-input" rows="2" onchange="salvarTitulo('${docId}', this.value)">${nota.titulo}</textarea>
-                            <div class="task-star">☆</div>
-                        </div>
-                        <div class="details-row" style="padding: 0; border: none; color: var(--text-accent-green);">
-                            <span class="details-icon" style="font-size: 1.5em; margin-right: 5px;">+</span> Adicionar etapa
-                        </div>
-                    </div>
-
-                    <!-- Bloco 2: Meu Dia -->
-                    <div class="details-block">
-                        <div class="details-row">
-                            <span class="details-icon">☀️</span> Adicionar a Meu Dia
-                        </div>
-                    </div>
-
-                    <!-- Bloco 3: Data e Lembretes -->
-                    <div class="details-block">
-                        <div class="details-row">
-                            <span class="details-icon text-green">⏰</span>
-                            <div class="row-text-content">
-                                <span class="row-text-main text-green">Lembre-me à(s) 09:00</span>
-                                <span class="row-text-sub">Amanhã</span>
-                            </div>
-                            <button class="btn-clear-row">✕</button>
-                        </div>
-                        <div class="details-row">
-                            <span class="details-icon text-green">📅</span>
-                            <div class="row-text-content">
-                                <span class="row-text-main text-green">Para Amanhã</span>
-                            </div>
-                            <button class="btn-clear-row">✕</button>
-                        </div>
-                        <div class="details-row">
-                            <span class="details-icon">🔁</span> Repetir
-                        </div>
-                    </div>
-
-                    <!-- Bloco 4: Atribuir a -->
-                    <div class="details-block">
-                        <div class="details-row">
-                            <span class="details-icon">👤</span> Atribuir a
-                        </div>
-                    </div>
-
-                    <!-- Bloco 5: Anexos -->
-                    <div class="details-block">
-                        <div class="details-row" onclick="anexarFicheiro('${docId}')">
-                            <span class="details-icon">📎</span> Adicionar arquivo
-                        </div>
-                        ${anexosHtml ? `<div class="anexos-list">${anexosHtml}</div>` : ''}
-                    </div>
-
-                    <!-- Bloco 6: Anotações / Observações -->
-                    <div class="details-block" style="padding: 15px;">
-                        ${comentarioExibicao}
-                        <div class="add-note-box">
-                            <textarea id="extra-${docId}" placeholder="Adicionar anotação"></textarea>
-                            <button class="btn-save-note" onclick="adicionarComentarioAdicional('${docId}')">Guardar Observação</button>
-                        </div>
-                        <div style="clear: both;"></div>
-                    </div>
-
-                </div>
-
-                <div class="details-footer">
-                    <span>Criado em ${dataFormatada}</span>
-                    <button class="btn-delete" title="Excluir" onclick="excluirAtividade('${docId}')">🗑️</button>
-                </div>
-            `;
-        }
-
-        window.salvarTitulo = async function(docId, novoTitulo) {
-            if (novoTitulo.trim() !== "") {
-                const docRef = doc(db, "anotacoes", docId);
-                await updateDoc(docRef, { titulo: novoTitulo.trim() });
-            }
-        };
-
-        window.adicionarComentarioAdicional = async function(docId) {
-            const textarea = document.getElementById('extra-' + docId);
-            const novoTexto = textarea.value.trim();
-            if (!novoTexto) return;
-            
-            const nota = todasAnotacoes[docId];
-            const comentarioAntigo = nota.comentario || '';
-            const dataAtual = new Date().toLocaleString('pt-BR').slice(0, 16);
-            const separador = comentarioAntigo ? "\n\n" : "";
-            const textoFinal = comentarioAntigo + separador + "✏️ [" + dataAtual + "] " + novoTexto;
-            
-            const docRef = doc(db, "anotacoes", docId);
-            await updateDoc(docRef, { comentario: textoFinal });
-        };
-
-        window.anexarFicheiro = function(docId) {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { alert("Limite de 2MB por ficheiro."); return; }
-
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const fileData = { nome: file.name, url: event.target.result };
-                    const nota = todasAnotacoes[docId];
-                    const anexosAntigos = nota.anexos || [];
-                    anexosAntigos.push(fileData);
-
-                    const docRef = doc(db, "anotacoes", docId);
-                    await updateDoc(docRef, { anexos: anexosAntigos });
-                };
-                reader.readAsDataURL(file);
-            };
-            input.click();
-        };
-
-        window.arquivarAtividade = async function(docId) {
-            const docRef = doc(db, "anotacoes", docId);
-            await updateDoc(docRef, { arquivado: true });
-            fecharDetalhes();
-        };
-
-        window.excluirAtividade = async function(docId) {
-            if (confirm("Deseja excluir permanentemente esta atividade?")) {
-                const docRef = doc(db, "anotacoes", docId);
-                await deleteDoc(docRef);
-                fecharDetalhes();
-            }
-        };
-    </script>
-</body>
-</html>
+            background-color: var(--bg-item-hover); border: 1px solid var(--border-color); color: white; padding: 6px 12px;
