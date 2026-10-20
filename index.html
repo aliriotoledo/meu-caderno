@@ -99,37 +99,6 @@
             font-size: 0.85em; color: var(--text-secondary); margin-top: 5px;
         }
 
-        /* Container Dinâmico de Vistas */
-        .view-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        #viewAgenda {
-            display: none;
-            padding: 20px 40px;
-            overflow-y: auto;
-        }
-
-        /* Calendário */
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-        }
-        .cal-header {
-            text-align: center; font-weight: bold; padding: 10px; color: var(--text-secondary); font-size: 0.9em; text-transform: uppercase;
-        }
-        .cal-day {
-            background: var(--bg-item); border-radius: 5px; min-height: 100px; padding: 10px; border: 1px solid transparent; cursor: pointer; display: flex; flex-direction: column;
-        }
-        .cal-day:hover { background: var(--bg-item-hover); border-color: var(--border-color); }
-        .cal-day.empty { background: transparent; cursor: default; border: none; }
-        .cal-day.hoje { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); }
-        .day-number { font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
-
         .task-list-container {
             flex: 1;
             overflow-y: auto;
@@ -137,64 +106,16 @@
         }
 
         .task-item {
-            background-color: var(--bg-item); border-radius: 5px; padding: 12px 16px; margin-bottom: 6px; display: flex; align-items: center; gap: 15px; cursor: pointer; transition: background 0.2s; border: 1px solid transparent;
+            background-color: var(--bg-item);
+            border-radius: 5px;
+            padding: 12px 16px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: 1px solid transparent;
         }
         .task-item:hover { background-color: var(--bg-item-hover); }
-        .task-item.selected { border-color: var(--border-color); background-color: var(--bg-item-hover); }
-        
-        .task-circle { width: 18px; height: 18px; border: 1.5px solid var(--text-secondary); border-radius: 50%; flex-shrink: 0; cursor: pointer; }
-        .task-circle:hover { border-color: white; }
-        .task-title-text { flex: 1; font-size: 0.95em; }
-        .task-star { color: var(--text-secondary); font-size: 1.2em; cursor: pointer; }
-
-        /* Input para Nova Tarefa */
-        .add-task-container {
-            padding: 20px 40px;
-            background-color: var(--bg-main);
-        }
-        .add-task-box {
-            background-color: var(--bg-item); border-radius: 5px; display: flex; align-items: center; padding: 0 15px;
-        }
-        .add-task-box input {
-            flex: 1; background: transparent; border: none; color: white; padding: 15px 10px; font-size: 0.95em; outline: none;
-        }
-        .add-task-box input::placeholder { color: var(--text-secondary); }
-
-        /* --- COLUNA 3: PAINEL DE DETALHES --- */
-        .details-panel {
-            width: 360px; background-color: var(--bg-panel); border-left: 1px solid var(--border-color); display: none; flex-direction: column;
-        }
-        .details-panel.active { display: flex; }
-
-        .details-top-bar { padding: 10px 15px; display: flex; justify-content: flex-end; border-bottom: 1px solid var(--border-color); }
-        .btn-close-details { background: none; border: none; color: var(--text-secondary); cursor: pointer; font-size: 1.2em; padding: 0; }
-        .btn-close-details:hover { color: white; }
-
-        .details-body { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px; }
-
-        /* Blocos Agrupados */
-        .details-block { background-color: var(--bg-item); border-radius: 5px; overflow: hidden; display: flex; flex-direction: column; }
-        .details-block-header { padding: 15px; }
-        .details-title-row { display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px; }
-        .details-title-input { flex: 1; background: transparent; border: none; color: white; font-size: 1.1em; font-weight: 600; outline: none; resize: none; font-family: inherit; }
-        
-        .details-row {
-            padding: 12px 15px; display: flex; align-items: center; gap: 15px; font-size: 0.9em; color: var(--text-secondary); cursor: pointer; border-bottom: 1px solid var(--border-color); position: relative;
-        }
-        .details-row:last-child { border-bottom: none; }
-        .details-row:hover { background-color: var(--bg-item-hover); color: var(--text-primary); }
-        .details-icon { font-size: 1.2em; width: 20px; text-align: center; }
-        
-        .row-text-content { flex: 1; display: flex; flex-direction: column; }
-        .row-text-main { color: var(--text-primary); }
-        .row-text-sub { font-size: 0.85em; color: var(--text-secondary); margin-top: 2px; }
-        .text-green { color: var(--text-accent-green); }
-
-        /* Anotações e Comentários */
-        .add-note-box textarea {
-            width: 100%; background-color: transparent; border: none; color: white; font-family: inherit; font-size: 0.9em; resize: vertical; min-height: 40px; outline: none;
-        }
-        .add-note-box textarea::placeholder { color: var(--text-secondary); }
-        
-        .btn-save-note {
-            background-color: var(--bg-item-hover); border: 1px solid var(--border-color); color: white; padding: 6px 12px;
+        .task-item.selected { border
