@@ -9,6 +9,7 @@
             font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; 
             margin: 0; 
             background-color: #f3f4f6; 
+            user-select: none;
         }
         
         /* Cabeçalho Azul */
@@ -113,17 +114,46 @@
             color: #4b5563;
         }
 
-        /* Lista de Atividades */
+        /* Lista e Gestos de Arraste (Swipe) */
         #listaAnotacoes {
             padding: 0 20px 20px 20px;
         }
+        .swipe-wrapper {
+            position: relative;
+            margin-bottom: 12px;
+            border-radius: 10px;
+            overflow: hidden;
+            background-color: #e5e7eb;
+        }
+        .swipe-bg {
+            position: absolute;
+            top: 0; bottom: 0; left: 0; right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            font-weight: bold;
+            color: white;
+            font-size: 0.9em;
+        }
+        .swipe-bg-excluir {
+            background-color: #ef4444;
+            justify-content: flex-start;
+        }
+        .swipe-bg-arquivar {
+            background-color: #6b7280;
+            justify-content: flex-end;
+        }
         .atividade { 
+            position: relative;
             background: white; 
-            margin-bottom: 12px; 
             border-radius: 10px; 
             overflow: hidden; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
             border: 1px solid #f3f4f6;
+            transition: transform 0.15s ease-out;
+            touch-action: pan-y;
+            z-index: 2;
         }
         .titulo { 
             padding: 15px; 
@@ -133,20 +163,35 @@
             display: flex; 
             justify-content: space-between; 
             align-items: center;
-            user-select: none; 
         }
         .titulo-texto {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex: 1;
+        }
+        .btn-edit {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px 6px;
+            margin-left: 5px;
+            border-radius: 4px;
+            opacity: 0.7;
+        }
+        .btn-edit:hover {
+            opacity: 1;
+            background-color: #f3f4f6;
         }
         .check-icon {
-            width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px;
+            width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px; flex-shrink: 0;
         }
         .expand-icon { 
             color: #21324D; 
             font-size: 1.5em; 
             line-height: 1; 
+            margin-left: 10px;
         }
         .conteudo { 
             padding: 0 15px 15px 45px; 
@@ -156,7 +201,6 @@
         }
         .conteudo.ativo { display: block; }
         
-        /* Novas áreas de Comentário Adicional */
         .add-comentario-box {
             margin-top: 15px;
             padding-top: 10px;
@@ -171,6 +215,41 @@
             border-radius: 6px;
             background-color: #f9fafb;
         }
+        
+        /* Área de Anexos */
+        .anexos-container {
+            margin-top: 12px;
+            padding-top: 10px;
+            border-top: 1px dashed #e5e7eb;
+        }
+        .anexos-titulo {
+            font-size: 0.85em;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+        .lista-anexos {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .item-anexo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: #f3f4f6;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            color: #1f2937;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .item-anexo:hover {
+            background-color: #e5e7eb;
+        }
+
         .btn-small {
             background-color: #f3f4f6;
             color: #374151;
@@ -213,14 +292,13 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Chaves de ligação do Firebase inseridas automaticamente
         const firebaseConfig = {
             apiKey: "AIzaSyAnIk5cQwljtWvEcvyvsZ-gejfMIpggx3Q",
             authDomain: "meu-caderno-app.firebaseapp.com",
             projectId: "meu-caderno-app",
-            storageBucket: "meu-caderno-app.firebasestorage.app",
+            storageBucket: "meu-caderno-app.appspot.com",
             messagingSenderId: "237821420171",
             appId: "1:237821420171:web:063873bdb2e4707a6dea8e",
             measurementId: "G-HVKVB5PBX"
@@ -229,7 +307,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Função para atualizar relógio e data no topo
+        // Atualizar Relógio no Topo
         function atualizarRelogio() {
             const elementoRelogio = document.getElementById('relogioCabecalho');
             if(!elementoRelogio) return;
@@ -241,11 +319,10 @@
             
             elementoRelogio.textContent = dataFormatada + ' - ' + horaFormatada;
         }
-        
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
 
-        // Função para Adicionar Nova Nota
+        // Adicionar Nova Nota
         window.adicionarNota = async function() {
             const inputTitulo = document.getElementById('novaAtividade');
             const inputComentario = document.getElementById('novoComentario');
@@ -261,17 +338,28 @@
             await addDoc(collection(db, "anotacoes"), {
                 titulo: titulo,
                 comentario: comentario,
+                anexos: [],
+                arquivado: false,
                 data: new Date()
             });
         };
 
-        // Função para Adicionar Mais Comentários
+        // Editar Título
+        window.editarTitulo = async function(docId, tituloAtual, event) {
+            event.stopPropagation();
+            const novoTitulo = prompt("Editar título da atividade:", tituloAtual);
+            if (novoTitulo !== null && novoTitulo.trim() !== "") {
+                const docRef = doc(db, "anotacoes", docId);
+                await updateDoc(docRef, { titulo: novoTitulo.trim() });
+            }
+        };
+
+        // Adicionar Comentário Adicional
         window.adicionarComentarioAdicional = async function(docId) {
             const textareaExtra = document.getElementById('extra-' + docId);
             const novoTexto = textareaExtra.value;
             
             if (!novoTexto) return;
-            
             textareaExtra.value = ''; 
             
             const docRef = doc(db, "anotacoes", docId);
@@ -280,52 +368,152 @@
             if (docSnap.exists()) {
                 const dados = docSnap.data();
                 const comentarioAntigo = dados.comentario || '';
-                
                 const dataAtual = new Date().toLocaleString('pt-BR').slice(0, 16);
                 const separador = comentarioAntigo ? "\n\n" : "";
-                
                 const textoFinal = comentarioAntigo + separador + "✏️ [" + dataAtual + "] " + novoTexto;
                 
-                await updateDoc(docRef, {
-                    comentario: textoFinal
-                });
+                await updateDoc(docRef, { comentario: textoFinal });
             }
         };
 
-        // Carregar anotações em tempo real
+        // Adicionar Anexo (Direto no Firestore de forma gratuita e otimizada)
+        window.anexarFicheiro = function(docId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 2 * 1024 * 1024) {
+                    alert("Por favor, selecione um ficheiro de até 2MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const fileData = {
+                        nome: file.name,
+                        url: event.target.result
+                    };
+
+                    const docRef = doc(db, "anotacoes", docId);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const dados = docSnap.data();
+                        const anexosAntigos = dados.anexos || [];
+                        anexosAntigos.push(fileData);
+
+                        await updateDoc(docRef, { anexos: anexosAntigos });
+                        alert("Ficheiro anexado com sucesso!");
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        };
+
+        // Ações de Arraste (Arquivar e Excluir)
+        window.arquivarAtividade = async function(docId) {
+            const docRef = doc(db, "anotacoes", docId);
+            await updateDoc(docRef, { arquivado: true });
+        };
+
+        window.excluirAtividade = async function(docId) {
+            if (confirm("Deseja realmente excluir esta atividade definitivamente?")) {
+                const docRef = doc(db, "anotacoes", docId);
+                await deleteDoc(docRef);
+            }
+        };
+
+        // Carregar anotações
         const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
         onSnapshot(q, (snapshot) => {
             const lista = document.getElementById('listaAnotacoes');
             lista.innerHTML = '';
             
-            snapshot.forEach((doc) => {
-                const nota = doc.data();
-                const div = document.createElement('div');
-                div.className = 'atividade';
-                
+            snapshot.forEach((docSnapshot) => {
+                const nota = docSnapshot.data();
+                if (nota.arquivado) return;
+
+                const docId = docSnapshot.id;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'swipe-wrapper';
+
                 const dataFormatada = nota.data ? nota.data.toDate().toLocaleString('pt-BR') : '';
                 const comentarioExibicao = (nota.comentario || '').replace(/\n/g, '<br>');
 
-                div.innerHTML = `
-                    <div class="titulo" onclick="this.nextElementSibling.classList.toggle('ativo')">
-                        <div class="titulo-texto">
-                            <div class="check-icon"></div>
-                            ${nota.titulo}
-                        </div>
-                        <span class="expand-icon">+</span>
-                    </div>
-                    <div class="conteudo">
-                        <div style="margin-top:0; margin-bottom: 10px; line-height: 1.5;">${comentarioExibicao}</div>
-                        
-                        <div class="add-comentario-box">
-                            <textarea id="extra-${doc.id}" placeholder="Adicionar mais observações..."></textarea>
-                            <button class="btn-small" onclick="adicionarComentarioAdicional('${doc.id}')">Guardar Observação</button>
-                        </div>
+                let anexosHtml = '';
+                if (nota.anexos && nota.anexos.length > 0) {
+                    anexosHtml = nota.anexos.map(item => 
+                        `<a href="${item.url}" target="_blank" download="${item.nome}" class="item-anexo">📎 ${item.nome}</a>`
+                    ).join('');
+                } else {
+                    anexosHtml = '<span style="font-size: 0.8em; color: #9ca3af;">Nenhum anexo adicionado.</span>';
+                }
 
-                        <span class="data">Criado em: ${dataFormatada}</span>
+                wrapper.innerHTML = `
+                    <div class="swipe-bg swipe-bg-excluir" id="bg-excluir-${docId}">🗑️ Excluir</div>
+                    <div class="swipe-bg swipe-bg-arquivar" id="bg-arquivar-${docId}">📦 Arquivar</div>
+                    <div class="atividade" id="card-${docId}">
+                        <div class="titulo" onclick="this.nextElementSibling.classList.toggle('ativo')">
+                            <div class="titulo-texto">
+                                <div class="check-icon"></div>
+                                <span>${nota.titulo}</span>
+                                <button class="btn-edit" onclick="editarTitulo('${docId}', '${nota.titulo.replace(/'/g, "\\'")}', event)">✏️</button>
+                            </div>
+                            <span class="expand-icon">+</span>
+                        </div>
+                        <div class="conteudo">
+                            <div style="margin-top:0; margin-bottom: 10px; line-height: 1.5;">${comentarioExibicao}</div>
+                            
+                            <div class="anexos-container">
+                                <div class="anexos-titulo">Ficheiros Anexados:</div>
+                                <div class="lista-anexos">${anexosHtml}</div>
+                                <button class="btn-small" onclick="anexarFicheiro('${docId}')">📎 Anexar Ficheiro</button>
+                            </div>
+
+                            <div class="add-comentario-box">
+                                <textarea id="extra-${docId}" placeholder="Adicionar mais observações..."></textarea>
+                                <button class="btn-small" onclick="adicionarComentarioAdicional('${docId}')">Guardar Observação</button>
+                            </div>
+                            <span class="data">Criado em: ${dataFormatada}</span>
+                        </div>
                     </div>
                 `;
-                lista.appendChild(div);
+                lista.appendChild(wrapper);
+
+                // Configuração Gestos Touch
+                const card = wrapper.querySelector(`#card-${docId}`);
+                let startX = 0;
+                let currentX = 0;
+
+                card.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    card.style.transition = 'none';
+                });
+
+                card.addEventListener('touchmove', (e) => {
+                    currentX = e.touches[0].clientX - startX;
+                    card.style.transform = `translateX(${currentX}px)`;
+                });
+
+                card.addEventListener('touchend', () => {
+                    card.style.transition = 'transform 0.2s ease-out';
+                    
+                    if (currentX > 120) {
+                        card.style.transform = `translateX(100%)`;
+                        setTimeout(() => excluirAtividade(docId), 150);
+                    } 
+                    else if (currentX < -120) {
+                        card.style.transform = `translateX(-100%)`;
+                        setTimeout(() => arquivarAtividade(docId), 150);
+                    } 
+                    else {
+                        card.style.transform = `translateX(0px)`;
+                    }
+                    currentX = 0;
+                });
             });
         });
     </script>
