@@ -343,4 +343,189 @@
             inputComentario.value = '';
             
             await addDoc(collection(db, "anotacoes"), {
-                titulo:
+                titulo: titulo,
+                comentario: comentario,
+                anexos: [],
+                arquivado: false,
+                data: new Date()
+            });
+        };
+
+        // Editar Título
+        window.editarTitulo = async function(docId, tituloAtual, event) {
+            event.stopPropagation();
+            const novoTitulo = prompt("Editar título da atividade:", tituloAtual);
+            if (novoTitulo !== null && novoTitulo.trim() !== "") {
+                const docRef = doc(db, "anotacoes", docId);
+                await updateDoc(docRef, { titulo: novoTitulo.trim() });
+            }
+        };
+
+        // Adicionar Comentário Adicional
+        window.adicionarComentarioAdicional = async function(docId) {
+            const textareaExtra = document.getElementById('extra-' + docId);
+            const novoTexto = textareaExtra.value;
+            
+            if (!novoTexto) return;
+            textareaExtra.value = ''; 
+            
+            const docRef = doc(db, "anotacoes", docId);
+            const docSnap = await getDoc(docRef);
+            
+            if (docSnap.exists()) {
+                const dados = docSnap.data();
+                const comentarioAntigo = dados.comentario || '';
+                const dataAtual = new Date().toLocaleString('pt-BR').slice(0, 16);
+                const separador = comentarioAntigo ? "\n\n" : "";
+                const textoFinal = comentarioAntigo + separador + "✏️ [" + dataAtual + "] " + novoTexto;
+                
+                await updateDoc(docRef, { comentario: textoFinal });
+            }
+        };
+
+        // Adicionar Anexo (Direto no Firestore)
+        window.anexarFicheiro = function(docId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                if (file.size > 2 * 1024 * 1024) {
+                    alert("Por favor, selecione um ficheiro de até 2MB.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const fileData = {
+                        nome: file.name,
+                        url: event.target.result
+                    };
+
+                    const docRef = doc(db, "anotacoes", docId);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const dados = docSnap.data();
+                        const anexosAntigos = dados.anexos || [];
+                        anexosAntigos.push(fileData);
+
+                        await updateDoc(docRef, { anexos: anexosAntigos });
+                        alert("Ficheiro anexado com sucesso!");
+                    }
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        };
+
+        // Ações de Arraste (Arquivar e Excluir)
+        window.arquivarAtividade = async function(docId) {
+            const docRef = doc(db, "anotacoes", docId);
+            await updateDoc(docRef, { arquivado: true });
+        };
+
+        window.excluirAtividade = async function(docId) {
+            if (confirm("Deseja realmente excluir esta atividade definitivamente?")) {
+                const docRef = doc(db, "anotacoes", docId);
+                await deleteDoc(docRef);
+            }
+        };
+
+        // Carregar anotações
+        const q = query(collection(db, "anotacoes"), orderBy("data", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const lista = document.getElementById('listaAnotacoes');
+            lista.innerHTML = '';
+            
+            snapshot.forEach((docSnapshot) => {
+                const nota = docSnapshot.data();
+                if (nota.arquivado) return;
+
+                const docId = docSnapshot.id;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'swipe-wrapper';
+
+                const dataFormatada = nota.data ? nota.data.toDate().toLocaleString('pt-BR') : '';
+                const comentarioExibicao = (nota.comentario || '').replace(/\n/g, '<br>');
+
+                let anexosHtml = '';
+                if (nota.anexos && nota.anexos.length > 0) {
+                    anexosHtml = nota.anexos.map(item => 
+                        `<a href="${item.url}" target="_blank" download="${item.nome}" class="item-anexo">📎 ${item.nome}</a>`
+                    ).join('');
+                } else {
+                    anexosHtml = '<span style="font-size: 0.8em; color: #9ca3af;">Nenhum anexo adicionado.</span>';
+                }
+
+                wrapper.innerHTML = `
+                    <div class="swipe-bg swipe-bg-excluir" id="bg-excluir-${docId}">🗑️ Excluir</div>
+                    <div class="swipe-bg swipe-bg-arquivar" id="bg-arquivar-${docId}">📦 Arquivar</div>
+                    <div class="atividade" id="card-${docId}">
+                        <div class="titulo" onclick="this.nextElementSibling.classList.toggle('ativo')">
+                            <div class="titulo-texto">
+                                <div class="check-icon"></div>
+                                <span>${nota.titulo}</span>
+                                <button class="btn-edit" onclick="editarTitulo('${docId}', '${nota.titulo.replace(/'/g, "\\'")}', event)">✏️</button>
+                            </div>
+                            <span class="expand-icon">+</span>
+                        </div>
+                        <div class="conteudo">
+                            <div style="margin-top:0; margin-bottom: 10px; line-height: 1.5;">${comentarioExibicao}</div>
+                            
+                            <div class="add-comentario-box">
+                                <textarea id="extra-${docId}" placeholder="Adicionar mais observações..."></textarea>
+                                <div class="acoes-inferiores">
+                                    <button class="btn-small" onclick="adicionarComentarioAdicional('${docId}')">Guardar Observação</button>
+                                    <button class="btn-small" onclick="anexarFicheiro('${docId}')">📎 Anexar Ficheiro</button>
+                                </div>
+                            </div>
+
+                            <div class="anexos-container">
+                                <div class="anexos-titulo">Ficheiros Anexados:</div>
+                                <div class="lista-anexos">${anexosHtml}</div>
+                            </div>
+
+                            <span class="data">Criado em: ${dataFormatada}</span>
+                        </div>
+                    </div>
+                `;
+                lista.appendChild(wrapper);
+
+                // Configuração Gestos Touch
+                const card = wrapper.querySelector(`#card-${docId}`);
+                let startX = 0;
+                let currentX = 0;
+
+                card.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                    card.style.transition = 'none';
+                });
+
+                card.addEventListener('touchmove', (e) => {
+                    currentX = e.touches[0].clientX - startX;
+                    card.style.transform = `translateX(${currentX}px)`;
+                });
+
+                card.addEventListener('touchend', () => {
+                    card.style.transition = 'transform 0.2s ease-out';
+                    
+                    if (currentX > 120) {
+                        card.style.transform = `translateX(100%)`;
+                        setTimeout(() => excluirAtividade(docId), 150);
+                    } 
+                    else if (currentX < -120) {
+                        card.style.transform = `translateX(-100%)`;
+                        setTimeout(() => arquivarAtividade(docId), 150);
+                    } 
+                    else {
+                        card.style.transform = `translateX(0px)`;
+                    }
+                    currentX = 0;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
